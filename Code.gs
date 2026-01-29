@@ -56,7 +56,7 @@ function processFiles() {
       // Add to existing claims so subsequent files in this batch can match it
       existingClaims.push({
         folderName: newClaimName,
-        uhid: data.uhid,
+        patientName: (data.patientName || "Unknown").replace(/[^a-zA-Z0-9]/g, ""),
         startDate: data.dateObj
       });
     }
@@ -167,7 +167,7 @@ function callLLM(text) {
 
 /**
  * Parses existing claim folders to build metadata list.
- * Folder Name Format: PatientName_UHID_YYYY-MM-DD
+ * Folder Name Format: PatientName_YYYY-MM-DD
  */
 function getExistingClaimsMetadata(rootFolder) {
   var claims = [];
@@ -178,17 +178,18 @@ function getExistingClaimsMetadata(rootFolder) {
     var name = folder.getName();
     var parts = name.split("_");
     
-    // Expected format: Name_UHID_Date
-    // But handle variations gracefully
-    if (parts.length >= 3) {
+    // Expected format: Name_Date (old was Name_UHID_Date)
+    // We'll support the new format primarily
+    if (parts.length >= 2) {
       var dateStr = parts[parts.length - 1]; // Assume last part is date
-      var uhid = parts[parts.length - 2];    // Assume second to last is UHID
+      // Everything before the date is the name
+      var patientName = parts.slice(0, parts.length - 1).join("");
       
       var dateObj = parseDate(dateStr);
       if (dateObj) {
         claims.push({
           folderName: name,
-          uhid: uhid,
+          patientName: patientName,
           startDate: dateObj
         });
       }
@@ -199,18 +200,22 @@ function getExistingClaimsMetadata(rootFolder) {
 
 /**
  * Logic to find if a file belongs to an existing claim.
- * Match if: Same UHID AND FileDate is within 14 days of ClaimStartDate
+ * Match if: Same Patient Name AND FileDate is within 14 days of ClaimStartDate
  */
 function findMatchingClaim(fileData, existingClaims) {
-  if (!fileData.uhid || fileData.uhid === "Unknown") return null;
+  if (!fileData.patientName) return null;
   
+  // Normalize file patient name for comparison (remove special chars to match folder naming convention)
+  var filePatientNameNormalized = fileData.patientName.replace(/[^a-zA-Z0-9]/g, "");
+
   // 14 days in milliseconds
   var TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
   
   for (var i = 0; i < existingClaims.length; i++) {
     var claim = existingClaims[i];
     
-    if (claim.uhid === fileData.uhid) {
+    // Check if names match (case-insensitive for safety, though normalization handled casing mostly)
+    if (claim.patientName.toLowerCase() === filePatientNameNormalized.toLowerCase()) {
       var diff = Math.abs(fileData.dateObj - claim.startDate);
       if (diff <= TWO_WEEKS_MS) {
         return claim;
@@ -222,14 +227,13 @@ function findMatchingClaim(fileData, existingClaims) {
 
 /**
  * Generates a new claim folder name.
- * Format: PatientName_UHID_YYYY-MM-DD
+ * Format: PatientName_YYYY-MM-DD
  */
 function generateClaimName(data) {
   var safeName = (data.patientName || "Unknown").replace(/[^a-zA-Z0-9]/g, "");
-  var safeUHID = (data.uhid || "Unknown").replace(/[^a-zA-Z0-9]/g, "");
   var dateStr = data.documentDate || formatDate(new Date());
   
-  return safeName + "_" + safeUHID + "_" + dateStr;
+  return safeName + "_" + dateStr;
 }
 
 /**
