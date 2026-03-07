@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription-Centric Reimbursement — Flow Diagram</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a2035;
+            --bg-card-hover: #1f2847;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --accent-indigo: #6366f1;
+            --accent-lime: #84cc16;
+            --accent-teal: #14b8a6;
+            --accent-orange: #f97316;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-subtle: rgba(148, 163, 184, 0.1);
+            --border-glow: rgba(59, 130, 246, 0.3);
+            --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 20% 10%, rgba(16, 185, 129, 0.06), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(245, 158, 11, 0.05), transparent),
+                radial-gradient(ellipse 50% 50% at 50% 50%, rgba(139, 92, 246, 0.04), transparent);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            margin-bottom: 56px;
+        }
+
+        .header .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-emerald);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .header h1 {
+            font-size: 40px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f1f5f9, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            max-width: 720px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        .header .subtitle {
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* ── Principle Banner ── */
+        .principle-banner {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(245, 158, 11, 0.06));
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 48px;
+            text-align: center;
+        }
+
+        .principle-banner h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-emerald);
+            margin-bottom: 12px;
+        }
+
+        .principle-banner .anchor-model {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .anchor-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .anchor-item.prescription {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: var(--accent-emerald);
+            font-weight: 700;
+            font-size: 15px;
+            padding: 10px 20px;
+        }
+
+        .anchor-connector {
+            color: var(--text-muted);
+            font-size: 18px;
+            padding: 0 4px;
+        }
+
+        .anchor-item.supporting {
+            background: rgba(148, 163, 184, 0.06);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+
+        /* ── Flow Container ── */
+        .flow {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+        }
+
+        /* ── Phase Section ── */
+        .phase {
+            position: relative;
+            padding: 0;
+            opacity: 0;
+            transform: translateY(24px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        .phase:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .phase:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .phase:nth-child(5) {
+            animation-delay: 0.3s;
+        }
+
+        .phase:nth-child(7) {
+            animation-delay: 0.4s;
+        }
+
+        .phase:nth-child(9) {
+            animation-delay: 0.5s;
+        }
+
+        .phase:nth-child(11) {
+            animation-delay: 0.6s;
+        }
+
+        .phase:nth-child(13) {
+            animation-delay: 0.7s;
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .phase-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .phase-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .phase-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .phase-line {
+            height: 1px;
+            flex: 1;
+            opacity: 0.3;
+        }
+
+        /* Phase colors */
+        .phase-extract .phase-number {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--accent-purple);
+        }
+
+        .phase-extract .phase-title {
+            color: var(--accent-purple);
+        }
+
+        .phase-extract .phase-line {
+            background: linear-gradient(to right, var(--accent-purple), transparent);
+        }
+
+        .phase-identify .phase-number {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+        }
+
+        .phase-identify .phase-title {
+            color: var(--accent-emerald);
+        }
+
+        .phase-identify .phase-line {
+            background: linear-gradient(to right, var(--accent-emerald), transparent);
+        }
+
+        .phase-match .phase-number {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+        }
+
+        .phase-match .phase-title {
+            color: var(--accent-amber);
+        }
+
+        .phase-match .phase-line {
+            background: linear-gradient(to right, var(--accent-amber), transparent);
+        }
+
+        .phase-validate .phase-number {
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--accent-cyan);
+        }
+
+        .phase-validate .phase-title {
+            color: var(--accent-cyan);
+        }
+
+        .phase-validate .phase-line {
+            background: linear-gradient(to right, var(--accent-cyan), transparent);
+        }
+
+        .phase-report .phase-number {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--accent-rose);
+        }
+
+        .phase-report .phase-title {
+            color: var(--accent-rose);
+        }
+
+        .phase-report .phase-line {
+            background: linear-gradient(to right, var(--accent-rose), transparent);
+        }
+
+        .phase-output .phase-number {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent-indigo);
+        }
+
+        .phase-output .phase-title {
+            color: var(--accent-indigo);
+        }
+
+        .phase-output .phase-line {
+            background: linear-gradient(to right, var(--accent-indigo), transparent);
+        }
+
+        /* ── Cards ── */
+        .cards {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+
+        .cards-1 {
+            grid-template-columns: 1fr;
+            max-width: 640px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cards-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .cards-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .cards-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-glow);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 14px;
+        }
+
+        .card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        .card .tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .card .fn-name {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            opacity: 0.7;
+        }
+
+        /* Card accent colors */
+        .card-purple::before {
+            background: linear-gradient(to right, var(--accent-purple), rgba(139, 92, 246, 0.3));
+        }
+
+        .card-purple .card-icon {
+            background: rgba(139, 92, 246, 0.12);
+            color: var(--accent-purple);
+        }
+
+        .card-purple .tag {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--accent-purple);
+        }
+
+        .card-emerald::before {
+            background: linear-gradient(to right, var(--accent-emerald), rgba(16, 185, 129, 0.3));
+        }
+
+        .card-emerald .card-icon {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--accent-emerald);
+        }
+
+        .card-emerald .tag {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-emerald);
+        }
+
+        .card-amber::before {
+            background: linear-gradient(to right, var(--accent-amber), rgba(245, 158, 11, 0.3));
+        }
+
+        .card-amber .card-icon {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--accent-amber);
+        }
+
+        .card-amber .tag {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent-amber);
+        }
+
+        .card-cyan::before {
+            background: linear-gradient(to right, var(--accent-cyan), rgba(6, 182, 212, 0.3));
+        }
+
+        .card-cyan .card-icon {
+            background: rgba(6, 182, 212, 0.12);
+            color: var(--accent-cyan);
+        }
+
+        .card-cyan .tag {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--accent-cyan);
+        }
+
+        .card-rose::before {
+            background: linear-gradient(to right, var(--accent-rose), rgba(244, 63, 94, 0.3));
+        }
+
+        .card-rose .card-icon {
+            background: rgba(244, 63, 94, 0.12);
+            color: var(--accent-rose);
+        }
+
+        .card-rose .tag {
+            background: rgba(244, 63, 94, 0.1);
+            color: var(--accent-rose);
+        }
+
+        .card-indigo::before {
+            background: linear-gradient(to right, var(--accent-indigo), rgba(99, 102, 241, 0.3));
+        }
+
+        .card-indigo .card-icon {
+            background: rgba(99, 102, 241, 0.12);
+            color: var(--accent-indigo);
+        }
+
+        .card-indigo .tag {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-indigo);
+        }
+
+        .card-teal::before {
+            background: linear-gradient(to right, var(--accent-teal), rgba(20, 184, 166, 0.3));
+        }
+
+        .card-teal .card-icon {
+            background: rgba(20, 184, 166, 0.12);
+            color: var(--accent-teal);
+        }
+
+        .card-teal .tag {
+            background: rgba(20, 184, 166, 0.1);
+            color: var(--accent-teal);
+        }
+
+        .card-orange::before {
+            background: linear-gradient(to right, var(--accent-orange), rgba(249, 115, 22, 0.3));
+        }
+
+        .card-orange .card-icon {
+            background: rgba(249, 115, 22, 0.12);
+            color: var(--accent-orange);
+        }
+
+        .card-orange .tag {
+            background: rgba(249, 115, 22, 0.1);
+            color: var(--accent-orange);
+        }
+
+        /* ── Arrow Connector ── */
+        .connector {
+            display: flex;
+            justify-content: center;
+            padding: 16px 0;
+            position: relative;
+            opacity: 0;
+            animation: fadeUp 0.4s ease forwards;
+            animation-delay: 0.15s;
+        }
+
+        .connector .arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .connector .arrow-line {
+            width: 2px;
+            height: 24px;
+            background: linear-gradient(to bottom, var(--text-muted), transparent);
+            border-radius: 1px;
+        }
+
+        .connector .arrow-head {
+            font-size: 16px;
+            line-height: 1;
+            margin-top: -4px;
+        }
+
+        .connector .arrow-text {
+            margin-top: 2px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Decision Diamond ── */
+        .decision-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 4px 0 12px;
+        }
+
+        .decision {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 12px;
+            padding: 16px 32px;
+            text-align: center;
+            max-width: 560px;
+        }
+
+        .decision::before {
+            content: '◆';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: var(--accent-amber);
+            background: var(--bg-primary);
+            padding: 0 8px;
+        }
+
+        .decision h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent-amber);
+            margin-bottom: 4px;
+        }
+
+        .decision p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* ── Branch paths ── */
+        .branches {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 0 0 8px;
+        }
+
+        .branches-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .branch {
+            text-align: center;
+        }
+
+        .branch-label {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .branch-yes .branch-label {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--accent-emerald);
+        }
+
+        .branch-no .branch-label {
+            background: rgba(244, 63, 94, 0.12);
+            color: var(--accent-rose);
+        }
+
+        .branch-partial .branch-label {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--accent-amber);
+        }
+
+        /* ── JSON block ── */
+        .json-block {
+            margin-top: 12px;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid var(--border-subtle);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 11px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            overflow-x: auto;
+        }
+
+        .json-key {
+            color: var(--accent-cyan);
+        }
+
+        .json-string {
+            color: var(--accent-emerald);
+        }
+
+        .json-type {
+            color: var(--accent-amber);
+        }
+
+        .json-comment {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* ── Item pills ── */
+        .item-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .item-pill {
+            font-size: 10px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .pill-medicine {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: #c4b5fd;
+        }
+
+        .pill-test {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            color: #67e8f9;
+        }
+
+        .pill-match {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .pill-nomatch {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            color: #fda4af;
+        }
+
+        .pill-missing {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+
+        /* ── Status Table ── */
+        .status-table {
+            width: 100%;
+            margin-top: 14px;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .status-table th {
+            text-align: left;
+            padding: 8px 12px;
+            font-weight: 600;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .status-table td {
+            padding: 7px 12px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.05);
+        }
+
+        .status-table .status-ok {
+            color: var(--accent-emerald);
+        }
+
+        .status-table .status-warn {
+            color: var(--accent-amber);
+        }
+
+        .status-table .status-fail {
+            color: var(--accent-rose);
+        }
+
+        /* ── Sheet Tabs ── */
+        .sheet-tabs {
+            display: flex;
+            gap: 3px;
+            margin-top: 12px;
+        }
+
+        .sheet-tab {
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid var(--border-subtle);
+            border-bottom: none;
+        }
+
+        .sheet-tab.active {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: var(--accent-emerald);
+        }
+
+        .sheet-tab.inactive {
+            background: rgba(148, 163, 184, 0.04);
+            color: var(--text-muted);
+        }
+
+        /* ── Completeness Checks ── */
+        .check-list {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .check-item {
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .check-item.pass {
+            background: rgba(16, 185, 129, 0.06);
+            color: var(--accent-emerald);
+        }
+
+        .check-item.fail {
+            background: rgba(244, 63, 94, 0.06);
+            color: var(--accent-rose);
+        }
+
+        .check-item.warn {
+            background: rgba(245, 158, 11, 0.06);
+            color: var(--accent-amber);
+        }
+
+        /* ── Legend ── */
+        .legend {
+            margin-top: 48px;
+            padding: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+        }
+
+        .legend h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+
+            .cards-3,
+            .cards-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 30px;
+            }
+
+            .branches-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .cards-2,
+            .cards-3,
+            .cards-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .branches {
+                grid-template-columns: 1fr;
+            }
+
+            .anchor-model {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- ════════════ HEADER ════════════ -->
+        <div class="header">
+            <div class="badge">📋 Problem 2 — Flow Diagram</div>
+            <h1>Prescription-Centric Reimbursement</h1>
+            <p>Insurance reimburses only when a medicine, test, or procedure is prescribed by a doctor. This system
+                links every bill and report back to its originating prescription, enabling accurate reimbursement
+                calculation.</p>
+            <p class="subtitle">Extends the existing FileClassifier pipeline with a Pass 2 linkage engine</p>
+        </div>
+
+        <!-- ════════════ CORE PRINCIPLE ════════════ -->
+        <div class="principle-banner">
+            <h2>🏥 Prescription = Anchor Document</h2>
+            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">Every claim is built around
+                prescriptions. Supporting documents must link back to a prescribed item.</p>
+            <div class="anchor-model">
+                <div class="anchor-item prescription">📋 Prescription</div>
+                <span class="anchor-connector">→</span>
+                <div class="anchor-item supporting">💊 Medicine Bill</div>
+                <span class="anchor-connector">→</span>
+                <div class="anchor-item supporting">🧪 Diagnostics Bill</div>
+                <span class="anchor-connector">→</span>
+                <div class="anchor-item supporting">📊 Lab Report</div>
+                <span class="anchor-connector">→</span>
+                <div class="anchor-item supporting">🩻 Radiology Report</div>
+                <span class="anchor-connector">→</span>
+                <div class="anchor-item supporting">💳 Consultation Bill</div>
+            </div>
+        </div>
+
+        <div class="flow">
+
+            <!-- ════════════ PHASE 1: ENHANCED LLM EXTRACTION ════════════ -->
+            <div class="phase phase-extract">
+                <div class="phase-label">
+                    <div class="phase-number">1</div>
+                    <span class="phase-title">Enhanced LLM Extraction</span>
+                    <div class="phase-line"></div>
+                </div>
+                <div class="cards cards-2">
+                    <div class="card card-purple">
+                        <div class="card-icon">🤖</div>
+                        <h3>Modified Classification Prompt</h3>
+                        <p>The existing <code>buildClassificationPrompt()</code> is extended to extract
+                            <strong>structured line items</strong> from documents — not just metadata. The LLM now
+                            returns arrays of prescribed items, billed items, and reported tests.</p>
+                        <span class="tag">buildClassificationPrompt() — enhanced</span>
+                        <div class="fn-name">Pass 1 — runs during existing classification</div>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon">📦</div>
+                        <h3>New Extracted Fields</h3>
+                        <p>Each document type gets category-specific structured data in the LLM JSON response:</p>
+
+                        <div class="json-block">
+                            <span class="json-comment">// Prescription</span><br>
+                            <span class="json-key">"prescribedItems"</span>: [<br>
+                            &nbsp;&nbsp;{ <span class="json-key">"name"</span>: <span class="json-string">"Amoxicillin
+                                500mg"</span>, <span class="json-key">"type"</span>: <span
+                                class="json-type">"medicine"</span> },<br>
+                            &nbsp;&nbsp;{ <span class="json-key">"name"</span>: <span class="json-string">"Complete
+                                Blood Count"</span>, <span class="json-key">"type"</span>: <span
+                                class="json-type">"test"</span> }<br>
+                            ]<br><br>
+                            <span class="json-comment">// Medicine Bill</span><br>
+                            <span class="json-key">"billedItems"</span>: [<br>
+                            &nbsp;&nbsp;{ <span class="json-key">"name"</span>: <span class="json-string">"Amoxicillin
+                                500mg"</span>, <span class="json-key">"price"</span>: <span class="json-string">"150
+                                INR"</span> }<br>
+                            ]<br><br>
+                            <span class="json-comment">// Lab Report / Radiology Report</span><br>
+                            <span class="json-key">"reportedTests"</span>: [<br>
+                            &nbsp;&nbsp;{ <span class="json-key">"name"</span>: <span class="json-string">"Complete
+                                Blood Count"</span> }<br>
+                            ]
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector">
+                <div class="arrow">
+                    <div class="arrow-line"></div>
+                    <div class="arrow-head">▼</div><span class="arrow-text">classified + items extracted</span>
+                </div>
+            </div>
+
+            <!-- ════════════ PHASE 2: IDENTIFY PRESCRIPTIONS ════════════ -->
+            <div class="phase phase-identify">
+                <div class="phase-label">
+                    <div class="phase-number">2</div>
+                    <span class="phase-title">Identify Anchor Prescriptions</span>
+                    <div class="phase-line"></div>
+                </div>
+                <div class="cards cards-3">
+                    <div class="card card-emerald">
+                        <div class="card-icon">📋</div>
+                        <h3>Find Prescriptions in Claim</h3>
+                        <p>After all files in a claim folder are classified, identify all documents with
+                            <code>category === "Prescription"</code>. These become the <strong>anchor documents</strong>
+                            for reimbursement linkage.</p>
+                        <span class="tag">Pass 2 — post-classification</span>
+                    </div>
+                    <div class="card card-emerald">
+                        <div class="card-icon">💊</div>
+                        <h3>Extract Prescribed Items</h3>
+                        <p>Aggregate all <code>prescribedItems</code> from every prescription in the claim. Separate
+                            into two lists: <strong>medicines</strong> (type: "medicine") and <strong>tests</strong>
+                            (type: "test").</p>
+                        <div class="item-pills">
+                            <span class="item-pill pill-medicine">💊 Amoxicillin 500mg</span>
+                            <span class="item-pill pill-medicine">💊 Paracetamol 650mg</span>
+                            <span class="item-pill pill-test">🧪 CBC</span>
+                            <span class="item-pill pill-test">🧪 Ultrasound Abdomen</span>
+                        </div>
+                    </div>
+                    <div class="card card-emerald">
+                        <div class="card-icon">⚠️</div>
+                        <h3>No Prescription Found?</h3>
+                        <p>If a claim folder has bills/reports but <strong>zero prescriptions</strong>, the entire claim
+                            is flagged as <span style="color: var(--accent-rose); font-weight: 600;">Not
+                                Reimbursable</span>. An alert is added to the Consolidated Report.</p>
+                        <span class="tag">Critical validation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector">
+                <div class="arrow">
+                    <div class="arrow-line"></div>
+                    <div class="arrow-head">▼</div><span class="arrow-text">for each non-prescription document</span>
+                </div>
+            </div>
+
+            <!-- ════════════ PHASE 3: ITEM MATCHING ════════════ -->
+            <div class="phase phase-match">
+                <div class="phase-label">
+                    <div class="phase-number">3</div>
+                    <span class="phase-title">Prescription ↔ Document Matching</span>
+                    <div class="phase-line"></div>
+                </div>
+
+                <div class="cards cards-1" style="max-width: 100%;">
+                    <div class="card card-amber" style="max-width: 100%;">
+                        <div class="card-icon">🔗</div>
+                        <h3>linkToPrescription() — Core Matching Engine</h3>
+                        <p>For each non-prescription document in the claim, attempts to match its items against
+                            prescribed items. The matching strategy depends on document category:</p>
+
+                        <table class="status-table" style="margin-top: 16px;">
+                            <thead>
+                                <tr>
+                                    <th>Document Category</th>
+                                    <th>Matches Against</th>
+                                    <th>Matching Function</th>
+                                    <th>Strategy</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>💊 Medicine Bill</td>
+                                    <td>prescribedItems (type: medicine)</td>
+                                    <td style="font-family: monospace; font-size: 11px;">matchMedicines()</td>
+                                    <td>Fuzzy name match ≥ 70%</td>
+                                </tr>
+                                <tr>
+                                    <td>🧪 Diagnostics Bill</td>
+                                    <td>prescribedItems (type: test)</td>
+                                    <td style="font-family: monospace; font-size: 11px;">matchTests()</td>
+                                    <td>Fuzzy name match ≥ 70%</td>
+                                </tr>
+                                <tr>
+                                    <td>📊 Lab Report</td>
+                                    <td>prescribedItems (type: test)</td>
+                                    <td style="font-family: monospace; font-size: 11px;">matchTests()</td>
+                                    <td>Fuzzy name match ≥ 70%</td>
+                                </tr>
+                                <tr>
+                                    <td>🩻 Radiology Report</td>
+                                    <td>prescribedItems (type: test)</td>
+                                    <td style="font-family: monospace; font-size: 11px;">matchTests()</td>
+                                    <td>Fuzzy name match ≥ 70%</td>
+                                </tr>
+                                <tr>
+                                    <td>💳 Consultation Bill</td>
+                                    <td>Any prescription</td>
+                                    <td style="font-family: monospace; font-size: 11px;">matchByDate()</td>
+                                    <td>Same date ± 1 day</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="fn-name">linkToPrescription() → matchMedicines() / matchTests() / matchByDate()
+                        </div>
+                    </div>
+                </div>
+
+                <div style="height: 16px;"></div>
+
+                <div class="cards cards-2">
+                    <div class="card card-amber">
+                        <div class="card-icon">💊</div>
+                        <h3>matchMedicines() — Fuzzy Medicine Matcher</h3>
+                        <p>For each item in <code>billedItems</code>, search across all prescriptions'
+                            <code>prescribedItems</code> (where type = "medicine"). Uses the existing
+                            <code>calculateNameSimilarity()</code> engine after normalizing drug names (strip strengths,
+                            lowercase).</p>
+
+                        <div style="margin-top: 12px; font-size: 12px; color: var(--text-secondary);">
+                            <strong style="color: var(--accent-amber);">Example:</strong><br>
+                            Bill: "Amoxicillin 500mg" ↔ Rx: "Amoxicillin 500 mg"
+                        </div>
+                        <div class="item-pills" style="margin-top: 12px;">
+                            <span class="item-pill pill-match">✅ Amoxicillin → Matched</span>
+                            <span class="item-pill pill-nomatch">❌ Paracetamol → Not Prescribed</span>
+                        </div>
+                    </div>
+                    <div class="card card-amber">
+                        <div class="card-icon">🧪</div>
+                        <h3>matchTests() — Fuzzy Test Matcher</h3>
+                        <p>For each item in <code>billedItems</code> or <code>reportedTests</code>, search across
+                            prescriptions' <code>prescribedItems</code> (where type = "test"). Handles abbreviations
+                            (CBC ↔ Complete Blood Count) via substring + Levenshtein matching.</p>
+
+                        <div style="margin-top: 12px; font-size: 12px; color: var(--text-secondary);">
+                            <strong style="color: var(--accent-amber);">Example:</strong><br>
+                            Report: "CBC" ↔ Rx: "Complete Blood Count"
+                        </div>
+                        <div class="item-pills" style="margin-top: 12px;">
+                            <span class="item-pill pill-match">✅ CBC → Matched</span>
+                            <span class="item-pill pill-missing">⚠️ Lipid Panel → Not Prescribed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector">
+                <div class="arrow">
+                    <div class="arrow-line"></div>
+                    <div class="arrow-head">▼</div><span class="arrow-text">match results computed</span>
+                </div>
+            </div>
+
+            <!-- ════════════ PHASE 4: REIMBURSEMENT CLASSIFICATION ════════════ -->
+            <div class="phase phase-validate">
+                <div class="phase-label">
+                    <div class="phase-number">4</div>
+                    <span class="phase-title">Reimbursement Classification</span>
+                    <div class="phase-line"></div>
+                </div>
+
+                <div class="decision-wrapper">
+                    <div class="decision">
+                        <h4>Is the billed item prescribed by a doctor?</h4>
+                        <p>Each line item is individually classified based on whether it matches a prescribed item</p>
+                    </div>
+                </div>
+
+                <div class="branches branches-3">
+                    <div class="branch branch-yes">
+                        <span class="branch-label">✅ Prescribed & Billed</span>
+                        <div class="card card-emerald" style="text-align: left;">
+                            <div class="card-icon">✅</div>
+                            <h3>Reimbursable</h3>
+                            <p>The item appears in a prescription AND has a supporting bill/report. <strong>Insurance
+                                    will reimburse this.</strong></p>
+                            <div class="item-pills">
+                                <span class="item-pill pill-match">Amoxicillin — ₹150 ✓</span>
+                                <span class="item-pill pill-match">CBC — ₹800 ✓</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="branch branch-no">
+                        <span class="branch-label">❌ Billed but Not Prescribed</span>
+                        <div class="card card-rose" style="text-align: left;">
+                            <div class="card-icon">🚫</div>
+                            <h3>Not Reimbursable</h3>
+                            <p>The item appears on a bill but is <strong>not found in any prescription</strong>.
+                                Insurance will likely reject this.</p>
+                            <div class="item-pills">
+                                <span class="item-pill pill-nomatch">Paracetamol — ₹30 ✗</span>
+                                <span class="item-pill pill-nomatch">Vitamin D — ₹200 ✗</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="branch branch-partial">
+                        <span class="branch-label">⚠️ Prescribed but Missing</span>
+                        <div class="card card-orange" style="text-align: left;">
+                            <div class="card-icon">📋</div>
+                            <h3>Incomplete — Needs Bill</h3>
+                            <p>The item was prescribed but <strong>no bill or report has been uploaded</strong> yet. The
+                                claim is incomplete.</p>
+                            <div class="item-pills">
+                                <span class="item-pill pill-missing">Ultrasound — no bill ⚠</span>
+                                <span class="item-pill pill-missing">X-Ray Chest — no report ⚠</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector">
+                <div class="arrow">
+                    <div class="arrow-line"></div>
+                    <div class="arrow-head">▼</div><span class="arrow-text">all items classified</span>
+                </div>
+            </div>
+
+            <!-- ════════════ PHASE 5: CLAIM COMPLETENESS ════════════ -->
+            <div class="phase phase-report">
+                <div class="phase-label">
+                    <div class="phase-number">5</div>
+                    <span class="phase-title">Claim Completeness Validation</span>
+                    <div class="phase-line"></div>
+                </div>
+
+                <div class="cards cards-2">
+                    <div class="card card-rose">
+                        <div class="card-icon">🔍</div>
+                        <h3>checkClaimCompleteness()</h3>
+                        <p>Runs 5 validation rules against the entire claim folder to determine if it's ready for
+                            insurance submission:</p>
+                        <div class="check-list">
+                            <div class="check-item pass">✅ Rule 1: At least one Prescription exists</div>
+                            <div class="check-item pass">✅ Rule 2: All billed medicines are prescribed</div>
+                            <div class="check-item warn">⚠️ Rule 3: Prescribed test "Ultrasound" missing report</div>
+                            <div class="check-item pass">✅ Rule 4: Consultation Bill present for visit date</div>
+                            <div class="check-item fail">❌ Rule 5: Medicine Bill has unprescribed items</div>
+                        </div>
+                        <div class="fn-name">checkClaimCompleteness()</div>
+                    </div>
+                    <div class="card card-rose">
+                        <div class="card-icon">💰</div>
+                        <h3>Reimbursement Summary</h3>
+                        <p>Calculates total amounts based on prescription linkage:</p>
+                        <table class="status-table">
+                            <tbody>
+                                <tr>
+                                    <td>Total Billed Amount</td>
+                                    <td style="font-weight: 700; color: var(--text-primary);">₹4,500</td>
+                                </tr>
+                                <tr>
+                                    <td>Reimbursable Amount</td>
+                                    <td class="status-ok" style="font-weight: 700;">₹3,800</td>
+                                </tr>
+                                <tr>
+                                    <td>Non-Reimbursable (not prescribed)</td>
+                                    <td class="status-fail" style="font-weight: 700;">₹700</td>
+                                </tr>
+                                <tr>
+                                    <td>Prescribed but Missing Bills</td>
+                                    <td class="status-warn" style="font-weight: 700;">2 items</td>
+                                </tr>
+                                <tr>
+                                    <td>Claim Status</td>
+                                    <td class="status-warn" style="font-weight: 700;">⚠️ Incomplete</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector">
+                <div class="arrow">
+                    <div class="arrow-line"></div>
+                    <div class="arrow-head">▼</div><span class="arrow-text">validation complete</span>
+                </div>
+            </div>
+
+            <!-- ════════════ PHASE 6: REPORT OUTPUT ════════════ -->
+            <div class="phase phase-output">
+                <div class="phase-label">
+                    <div class="phase-number">6</div>
+                    <span class="phase-title">Enhanced Consolidated Report</span>
+                    <div class="phase-line"></div>
+                </div>
+
+                <div class="cards cards-1" style="max-width: 100%;">
+                    <div class="card card-indigo" style="max-width: 100%;">
+                        <div class="card-icon">📊</div>
+                        <h3>Upgraded Consolidated_Report — 3 Tabs</h3>
+                        <p>The existing Consolidated Report is upgraded to a 3-tab spreadsheet that serves as the
+                            <strong>insurance claim package summary</strong>:</p>
+
+                        <div class="sheet-tabs">
+                            <span class="sheet-tab active">📋 Claim Summary</span>
+                            <span class="sheet-tab inactive">🔗 Prescription Coverage</span>
+                            <span class="sheet-tab inactive">📄 Document List</span>
+                        </div>
+
+                        <table class="status-table"
+                            style="margin-top: 0; border: 1px solid var(--border-subtle); border-radius: 0 8px 8px 8px;">
+                            <thead>
+                                <tr>
+                                    <th>Tab</th>
+                                    <th>Purpose</th>
+                                    <th>Key Columns</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-weight: 600; color: var(--accent-emerald);">Tab 1: Claim Summary
+                                    </td>
+                                    <td>High-level overview of the claim</td>
+                                    <td>Patient, Period, Total Billed, Reimbursable, Non-Reimbursable, Completeness</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: 600; color: var(--accent-amber);">Tab 2: Prescription
+                                        Coverage</td>
+                                    <td>Line-item linkage between prescribed items and supporting docs</td>
+                                    <td>Prescribed Item, Type, Doctor, Supporting Doc, Bill Amount, Status (✅/❌/⚠️)</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: 600; color: var(--accent-cyan);">Tab 3: Document List</td>
+                                    <td>All documents in the claim with reimbursement status</td>
+                                    <td>Category, File, Date, Amount, Linked Prescription, Reimbursable?</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="fn-name">updateConsolidatedSheet() — enhanced with 3 tabs</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ════════════ LEGEND ════════════ -->
+        <div class="legend">
+            <h3>Processing Flow</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--accent-purple);"></div>
+                    Phase 1: Enhanced extraction during existing LLM classification
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--accent-emerald);"></div>
+                    Phase 2–5: New Pass 2 — runs after all files are classified & organized
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--accent-indigo);"></div>
+                    Phase 6: Report update — enriches the existing Consolidated Report
+                </div>
+            </div>
+
+            <h3 style="margin-top: 20px;">Reimbursement Statuses</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--accent-emerald);"></div>
+                    ✅ Reimbursable — Prescribed + Bill/Report exists
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--accent-rose);"></div>
+                    ❌ Not Reimbursable — Billed but not in any prescription
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--accent-amber);"></div>
+                    ⚠️ Incomplete — Prescribed but missing supporting document
+                </div>
+            </div>
+
+            <h3 style="margin-top: 20px;">New Functions</h3>
+            <div class="legend-items" style="flex-direction: column; gap: 4px;">
+                <div class="legend-item" style="font-family: monospace; font-size: 12px;">
+                    <div class="legend-dot" style="background: var(--accent-amber);"></div>
+                    linkToPrescription(fileData, claimFiles) — Core matching engine
+                </div>
+                <div class="legend-item" style="font-family: monospace; font-size: 12px;">
+                    <div class="legend-dot" style="background: var(--accent-amber);"></div>
+                    matchMedicines(bill, prescriptions) — Fuzzy medicine name matcher
+                </div>
+                <div class="legend-item" style="font-family: monospace; font-size: 12px;">
+                    <div class="legend-dot" style="background: var(--accent-amber);"></div>
+                    matchTests(report, prescriptions) — Fuzzy test name matcher
+                </div>
+                <div class="legend-item" style="font-family: monospace; font-size: 12px;">
+                    <div class="legend-dot" style="background: var(--accent-rose);"></div>
+                    checkClaimCompleteness(claimFiles) — 5-rule claim validator
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

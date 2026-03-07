@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FileClassifier — Architecture Diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-card: #1a2035;
+      --bg-card-hover: #1f2847;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-indigo: #6366f1;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border-subtle: rgba(148, 163, 184, 0.1);
+      --border-glow: rgba(59, 130, 246, 0.3);
+      --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.15);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background gradient mesh */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(59, 130, 246, 0.08), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139, 92, 246, 0.06), transparent),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(6, 182, 212, 0.04), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .header .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-blue);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      font-size: 42px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #f1f5f9, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+    }
+
+    .header p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 680px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ── Flow Container ── */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+
+    /* ── Phase Section ── */
+    .phase {
+      position: relative;
+      padding: 0 0 0 0;
+    }
+
+    .phase-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .phase-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .phase-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .phase-line {
+      height: 1px;
+      flex: 1;
+      opacity: 0.3;
+    }
+
+    /* Phase colors */
+    .phase-ingest .phase-number { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+    .phase-ingest .phase-title { color: var(--accent-blue); }
+    .phase-ingest .phase-line { background: linear-gradient(to right, var(--accent-blue), transparent); }
+
+    .phase-prepare .phase-number { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+    .phase-prepare .phase-title { color: var(--accent-cyan); }
+    .phase-prepare .phase-line { background: linear-gradient(to right, var(--accent-cyan), transparent); }
+
+    .phase-classify .phase-number { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+    .phase-classify .phase-title { color: var(--accent-purple); }
+    .phase-classify .phase-line { background: linear-gradient(to right, var(--accent-purple), transparent); }
+
+    .phase-match .phase-number { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+    .phase-match .phase-title { color: var(--accent-amber); }
+    .phase-match .phase-line { background: linear-gradient(to right, var(--accent-amber), transparent); }
+
+    .phase-organize .phase-number { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+    .phase-organize .phase-title { color: var(--accent-emerald); }
+    .phase-organize .phase-line { background: linear-gradient(to right, var(--accent-emerald), transparent); }
+
+    .phase-report .phase-number { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+    .phase-report .phase-title { color: var(--accent-rose); }
+    .phase-report .phase-line { background: linear-gradient(to right, var(--accent-rose), transparent); }
+
+    /* ── Cards ── */
+    .cards {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    .cards-1 { grid-template-columns: 1fr; max-width: 600px; margin-left: auto; margin-right: auto; }
+    .cards-2 { grid-template-columns: repeat(2, 1fr); }
+    .cards-3 { grid-template-columns: repeat(3, 1fr); }
+    .cards-4 { grid-template-columns: repeat(4, 1fr); }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: default;
+    }
+
+    .card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-glow);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 14px;
+    }
+
+    .card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    .card .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+
+    .card .fn-name {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      opacity: 0.7;
+    }
+
+    /* Card accent colors */
+    .card-blue::before { background: linear-gradient(to right, var(--accent-blue), rgba(59,130,246,0.3)); }
+    .card-blue .card-icon { background: rgba(59, 130, 246, 0.12); color: var(--accent-blue); }
+    .card-blue .tag { background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); }
+
+    .card-cyan::before { background: linear-gradient(to right, var(--accent-cyan), rgba(6,182,212,0.3)); }
+    .card-cyan .card-icon { background: rgba(6, 182, 212, 0.12); color: var(--accent-cyan); }
+    .card-cyan .tag { background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); }
+
+    .card-purple::before { background: linear-gradient(to right, var(--accent-purple), rgba(139,92,246,0.3)); }
+    .card-purple .card-icon { background: rgba(139, 92, 246, 0.12); color: var(--accent-purple); }
+    .card-purple .tag { background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); }
+
+    .card-amber::before { background: linear-gradient(to right, var(--accent-amber), rgba(245,158,11,0.3)); }
+    .card-amber .card-icon { background: rgba(245, 158, 11, 0.12); color: var(--accent-amber); }
+    .card-amber .tag { background: rgba(245, 158, 11, 0.1); color: var(--accent-amber); }
+
+    .card-emerald::before { background: linear-gradient(to right, var(--accent-emerald), rgba(16,185,129,0.3)); }
+    .card-emerald .card-icon { background: rgba(16, 185, 129, 0.12); color: var(--accent-emerald); }
+    .card-emerald .tag { background: rgba(16, 185, 129, 0.1); color: var(--accent-emerald); }
+
+    .card-rose::before { background: linear-gradient(to right, var(--accent-rose), rgba(244,63,94,0.3)); }
+    .card-rose .card-icon { background: rgba(244, 63, 94, 0.12); color: var(--accent-rose); }
+    .card-rose .tag { background: rgba(244, 63, 94, 0.1); color: var(--accent-rose); }
+
+    .card-indigo::before { background: linear-gradient(to right, var(--accent-indigo), rgba(99,102,241,0.3)); }
+    .card-indigo .card-icon { background: rgba(99, 102, 241, 0.12); color: var(--accent-indigo); }
+    .card-indigo .tag { background: rgba(99, 102, 241, 0.1); color: var(--accent-indigo); }
+
+    /* ── Arrow Connector ── */
+    .connector {
+      display: flex;
+      justify-content: center;
+      padding: 16px 0;
+      position: relative;
+    }
+
+    .connector .arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .connector .arrow-line {
+      width: 2px;
+      height: 24px;
+      background: linear-gradient(to bottom, var(--text-muted), transparent);
+      border-radius: 1px;
+    }
+
+    .connector .arrow-head {
+      font-size: 16px;
+      line-height: 1;
+      margin-top: -4px;
+    }
+
+    .connector .arrow-text {
+      margin-top: 2px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Decision Diamond ── */
+    .decision-wrapper {
+      display: flex;
+      justify-content: center;
+      margin: 4px 0 12px;
+    }
+
+    .decision {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 12px;
+      padding: 16px 32px;
+      text-align: center;
+      max-width: 480px;
+    }
+
+    .decision::before {
+      content: '◆';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 14px;
+      color: var(--accent-amber);
+      background: var(--bg-primary);
+      padding: 0 8px;
+    }
+
+    .decision h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-amber);
+      margin-bottom: 4px;
+    }
+
+    .decision p {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Branch paths ── */
+    .branches {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 0 0 8px;
+    }
+
+    .branch {
+      text-align: center;
+    }
+
+    .branch-label {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    .branch-yes .branch-label { background: rgba(16,185,129,0.12); color: var(--accent-emerald); }
+    .branch-no .branch-label { background: rgba(245,158,11,0.12); color: var(--accent-amber); }
+
+    /* ── Categories Grid ── */
+    .categories-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .cat-chip {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(139, 92, 246, 0.08);
+      border: 1px solid rgba(139, 92, 246, 0.15);
+      color: #c4b5fd;
+      transition: all 0.2s;
+    }
+
+    .cat-chip:hover {
+      background: rgba(139, 92, 246, 0.15);
+      border-color: rgba(139, 92, 246, 0.3);
+      transform: scale(1.05);
+    }
+
+    /* ── Metadata fields ── */
+    .meta-fields {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .meta-field {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 5px;
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.12);
+      color: #a5b4fc;
+    }
+
+    /* ── Folder Structure ── */
+    .folder-tree {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.9;
+      margin-top: 12px;
+      padding: 14px 18px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .folder-tree .folder { color: var(--accent-amber); }
+    .folder-tree .file { color: var(--accent-emerald); }
+    .folder-tree .sheet { color: var(--accent-cyan); }
+
+    /* ── Trigger Badge ── */
+    .trigger-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 12px;
+      color: var(--accent-blue);
+      margin-top: 10px;
+    }
+
+    .trigger-badge .pulse {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+      50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(59,130,246,0); }
+    }
+
+    /* ── Fade-in animation ── */
+    .phase {
+      opacity: 0;
+      transform: translateY(24px);
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    .phase:nth-child(1) { animation-delay: 0.1s; }
+    .phase:nth-child(3) { animation-delay: 0.2s; }
+    .phase:nth-child(5) { animation-delay: 0.3s; }
+    .phase:nth-child(7) { animation-delay: 0.4s; }
+    .phase:nth-child(9) { animation-delay: 0.5s; }
+    .phase:nth-child(11) { animation-delay: 0.6s; }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .connector {
+      opacity: 0;
+      animation: fadeUp 0.4s ease forwards;
+      animation-delay: 0.15s;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .cards-3, .cards-4 { grid-template-columns: repeat(2, 1fr); }
+      .header h1 { font-size: 30px; }
+    }
+    @media (max-width: 600px) {
+      .cards-2, .cards-3, .cards-4 { grid-template-columns: 1fr; }
+      .branches { grid-template-columns: 1fr; }
+    }
+
+    /* ── Legend ── */
+    .legend {
+      margin-top: 48px;
+      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+    }
+
+    .legend h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .legend-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 3px;
+    }
+
+    /* ── Tech Stack ── */
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .tech-pill {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: rgba(148, 163, 184, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ════════════ HEADER ════════════ -->
+  <div class="header">
+    <div class="badge">⚙ System Architecture</div>
+    <h1>FileClassifier Pipeline</h1>
+    <p>An automated Google Apps Script system that classifies health insurance documents using Gemini AI vision &amp; text analysis, then organizes them into structured claim folders on Google Drive.</p>
+    <div class="tech-stack">
+      <span class="tech-pill">Google Apps Script</span>
+      <span class="tech-pill">Gemini 2.0 Flash</span>
+      <span class="tech-pill">Google Drive API</span>
+      <span class="tech-pill">Vision AI</span>
+      <span class="tech-pill">Google Sheets</span>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <!-- ════════════ PHASE 1: TRIGGER & INGEST ════════════ -->
+    <div class="phase phase-ingest">
+      <div class="phase-label">
+        <div class="phase-number">1</div>
+        <span class="phase-title">Trigger &amp; Ingest</span>
+        <div class="phase-line"></div>
+      </div>
+      <div class="cards cards-2">
+        <div class="card card-blue">
+          <div class="card-icon">⏰</div>
+          <h3>Time-Driven Trigger</h3>
+          <p>A Google Apps Script trigger fires automatically every <strong>15 minutes</strong>, invoking the main <code>processFiles()</code> entry point.</p>
+          <div class="trigger-badge">
+            <div class="pulse"></div>
+            <span>Runs every 15 min</span>
+          </div>
+          <div class="fn-name">processFiles()</div>
+        </div>
+        <div class="card card-blue">
+          <div class="card-icon">📂</div>
+          <h3>Source Folder Scan</h3>
+          <p>Iterates over <strong>all files</strong> in the configured <code>SOURCE_FOLDER_ID</code> ("raw" folder). Each file is picked up for processing in sequence.</p>
+          <span class="tag">DriveApp.getFolderById()</span>
+          <div class="fn-name">sourceFolder.getFiles()</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="arrow"><div class="arrow-line"></div><div class="arrow-head">▼</div><span class="arrow-text">for each file</span></div></div>
+
+    <!-- ════════════ PHASE 2: FILE PREPARATION ════════════ -->
+    <div class="phase phase-prepare">
+      <div class="phase-label">
+        <div class="phase-number">2</div>
+        <span class="phase-title">File Preparation</span>
+        <div class="phase-line"></div>
+      </div>
+      <div class="cards cards-3">
+        <div class="card card-cyan">
+          <div class="card-icon">👁️</div>
+          <h3>Vision Path (Preferred)</h3>
+          <p>Images &amp; PDFs are converted to <strong>base64</strong> and sent directly to Gemini Vision for analysis. Supports JPEG, PNG, GIF, BMP, WebP, TIFF, and PDF.</p>
+          <span class="tag">≤ 15 MB limit</span>
+          <div class="fn-name">prepareFileForLLM() → vision</div>
+        </div>
+        <div class="card card-cyan">
+          <div class="card-icon">📝</div>
+          <h3>Text Extraction</h3>
+          <p>Google Docs and plain text files have their content extracted directly via <code>DocumentApp</code> or <code>getBlob().getDataAsString()</code>.</p>
+          <span class="tag">≥ 10 chars required</span>
+          <div class="fn-name">prepareFileForLLM() → text</div>
+        </div>
+        <div class="card card-cyan">
+          <div class="card-icon">🔍</div>
+          <h3>OCR Fallback</h3>
+          <p>For unsupported types or large files, uses <strong>Google Drive's OCR</strong> to create a temporary Google Doc, extract text, then delete the temp doc.</p>
+          <span class="tag">Drive.Files.copy()</span>
+          <div class="fn-name">prepareViaOCR()</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="arrow"><div class="arrow-line"></div><div class="arrow-head">▼</div><span class="arrow-text">file input ready</span></div></div>
+
+    <!-- ════════════ PHASE 3: LLM CLASSIFICATION ════════════ -->
+    <div class="phase phase-classify">
+      <div class="phase-label">
+        <div class="phase-number">3</div>
+        <span class="phase-title">AI Classification</span>
+        <div class="phase-line"></div>
+      </div>
+      <div class="cards cards-2">
+        <div class="card card-purple" style="grid-column: span 1;">
+          <div class="card-icon">🤖</div>
+          <h3>Gemini API Call</h3>
+          <p>Sends document with a <strong>detailed classification prompt</strong> to Gemini 2.0 Flash. Includes category definitions, disambiguation rules, and output format spec. Uses <code>temperature: 0.1</code> for consistency and <code>response_mime_type: application/json</code> for structured output.</p>
+          <span class="tag">generateContent API</span>
+          <div class="fn-name">callLLM() → buildClassificationPrompt()</div>
+
+          <div style="margin-top: 16px;">
+            <p style="font-size: 12px; font-weight: 600; color: var(--accent-purple); margin-bottom: 8px;">12 Document Categories:</p>
+            <div class="categories-grid">
+              <span class="cat-chip">Prescription</span>
+              <span class="cat-chip">Consultation Bill</span>
+              <span class="cat-chip">Medicine Bill</span>
+              <span class="cat-chip">Pharmacy Receipt</span>
+              <span class="cat-chip">Diagnostics Bill</span>
+              <span class="cat-chip">Lab Report</span>
+              <span class="cat-chip">Radiology Report</span>
+              <span class="cat-chip">Discharge Summary</span>
+              <span class="cat-chip">Hospital Bill</span>
+              <span class="cat-chip">Insurance Form</span>
+              <span class="cat-chip">Doctor Notes</span>
+              <span class="cat-chip">Other</span>
+            </div>
+          </div>
+        </div>
+        <div class="card card-indigo">
+          <div class="card-icon">✅</div>
+          <h3>Parse &amp; Validate Response</h3>
+          <p>Parses the JSON response and validates the category against the allowed list. Invalid categories default to <strong>"Other"</strong>. Patient names are cleaned of titles (Dr., Mr., Mrs., etc.). Date format is validated as <code>YYYY-MM-DD</code>.</p>
+          <div class="fn-name">parseAndValidateLLMResponse()</div>
+
+          <div style="margin-top: 16px;">
+            <p style="font-size: 12px; font-weight: 600; color: var(--accent-indigo); margin-bottom: 8px;">Extracted Metadata Fields:</p>
+            <div class="meta-fields">
+              <span class="meta-field">category</span>
+              <span class="meta-field">documentDate</span>
+              <span class="meta-field">patientName</span>
+              <span class="meta-field">clinicName</span>
+              <span class="meta-field">billNumber</span>
+              <span class="meta-field">amount</span>
+              <span class="meta-field">doctorName</span>
+              <span class="meta-field">notes</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="arrow"><div class="arrow-line"></div><div class="arrow-head">▼</div><span class="arrow-text">sorted by date ↑</span></div></div>
+
+    <!-- ════════════ PHASE 4: CLAIM MATCHING ════════════ -->
+    <div class="phase phase-match">
+      <div class="phase-label">
+        <div class="phase-number">4</div>
+        <span class="phase-title">Claim Matching</span>
+        <div class="phase-line"></div>
+      </div>
+
+      <div class="decision-wrapper">
+        <div class="decision">
+          <h4>Does an existing claim folder match?</h4>
+          <p>Fuzzy name matching (token overlap + Levenshtein distance, ≥70% similarity) within a <strong>14-day date window</strong></p>
+        </div>
+      </div>
+
+      <div class="branches">
+        <div class="branch branch-yes">
+          <span class="branch-label">✓ Match Found</span>
+          <div class="card card-amber" style="text-align: left;">
+            <div class="card-icon">🔗</div>
+            <h3>Assign Existing Claim</h3>
+            <p>File is linked to the matched claim folder. The existing folder's name (e.g. <code>AjayBose_2025-03-15</code>) is used.</p>
+            <div class="fn-name">findMatchingClaim()</div>
+          </div>
+        </div>
+        <div class="branch branch-no">
+          <span class="branch-label">✗ No Match</span>
+          <div class="card card-amber" style="text-align: left;">
+            <div class="card-icon">🆕</div>
+            <h3>Create New Claim</h3>
+            <p>A new claim folder name is generated: <code>PatientName_YYYY-MM-DD</code>. The new claim is added to the in-memory list for batch matching.</p>
+            <div class="fn-name">generateClaimName()</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards cards-3" style="margin-top: 8px;">
+        <div class="card card-amber">
+          <div class="card-icon">🔤</div>
+          <h3>Name Normalization</h3>
+          <p>Strips titles (Dr/Mr/Mrs/Ms), removes special chars, lowercases, and trims whitespace for consistent comparison.</p>
+          <div class="fn-name">normalizeName()</div>
+        </div>
+        <div class="card card-amber">
+          <div class="card-icon">📊</div>
+          <h3>Token Similarity</h3>
+          <p>Splits names into tokens. Scores exact matches (1.0), substring matches (0.7), and Levenshtein-close matches (0.8). Handles OCR errors and abbreviations.</p>
+          <div class="fn-name">calculateNameSimilarity()</div>
+        </div>
+        <div class="card card-amber">
+          <div class="card-icon">📏</div>
+          <h3>Levenshtein Distance</h3>
+          <p>Edit-distance algorithm for fuzzy matching. Allows up to ~30% character difference per token to handle OCR typos and spelling variations.</p>
+          <div class="fn-name">levenshteinDistance()</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="arrow"><div class="arrow-line"></div><div class="arrow-head">▼</div><span class="arrow-text">claim assigned</span></div></div>
+
+    <!-- ════════════ PHASE 5: FILE ORGANIZATION ════════════ -->
+    <div class="phase phase-organize">
+      <div class="phase-label">
+        <div class="phase-number">5</div>
+        <span class="phase-title">File Organization</span>
+        <div class="phase-line"></div>
+      </div>
+      <div class="cards cards-2">
+        <div class="card card-emerald">
+          <div class="card-icon">📁</div>
+          <h3>Move &amp; Rename</h3>
+          <p>File is moved from the raw folder into the claim folder. The file is renamed with its category prefix: <code>Category_OriginalName</code>.</p>
+          <div class="fn-name">moveAndOrganizeFile()</div>
+        </div>
+        <div class="card card-emerald">
+          <div class="card-icon">🗂️</div>
+          <h3>Resulting Folder Structure</h3>
+          <div class="folder-tree">
+            <span class="folder">📁 health/</span> (Destination Root)<br>
+            &nbsp;&nbsp;├── <span class="folder">📁 AjayBose_2025-03-15/</span><br>
+            &nbsp;&nbsp;│ &nbsp;&nbsp;├── <span class="file">Prescription_doc1.pdf</span><br>
+            &nbsp;&nbsp;│ &nbsp;&nbsp;├── <span class="file">Lab Report_blood_test.jpg</span><br>
+            &nbsp;&nbsp;│ &nbsp;&nbsp;├── <span class="file">Medicine Bill_pharmacy.pdf</span><br>
+            &nbsp;&nbsp;│ &nbsp;&nbsp;└── <span class="sheet">📊 Consolidated_Report</span><br>
+            &nbsp;&nbsp;├── <span class="folder">📁 PriyaSharma_2025-02-20/</span><br>
+            &nbsp;&nbsp;│ &nbsp;&nbsp;├── <span class="file">Discharge Summary_...</span><br>
+            &nbsp;&nbsp;│ &nbsp;&nbsp;└── <span class="sheet">📊 Consolidated_Report</span><br>
+            &nbsp;&nbsp;└── <span class="sheet">📊 Classification_Log</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="arrow"><div class="arrow-line"></div><div class="arrow-head">▼</div><span class="arrow-text">file moved</span></div></div>
+
+    <!-- ════════════ PHASE 6: REPORTING ════════════ -->
+    <div class="phase phase-report">
+      <div class="phase-label">
+        <div class="phase-number">6</div>
+        <span class="phase-title">Reporting &amp; Audit</span>
+        <div class="phase-line"></div>
+      </div>
+      <div class="cards cards-2">
+        <div class="card card-rose">
+          <div class="card-icon">📊</div>
+          <h3>Consolidated Report</h3>
+          <p>A Google Sheet is created (or updated) <strong>per claim folder</strong>. Appends a row with patient name, clinic, doctor, bill number, category, amount, document date, date added, and notes.</p>
+          <span class="tag">Per-claim sheet</span>
+          <div class="fn-name">updateConsolidatedSheet()</div>
+        </div>
+        <div class="card card-rose">
+          <div class="card-icon">📋</div>
+          <h3>Classification Log</h3>
+          <p>A <strong>central audit log</strong> in the root destination folder records every classification decision: timestamp, original filename, category, patient, clinic, amount, claim folder, and the <strong>raw LLM response</strong> for debugging.</p>
+          <span class="tag">Global audit trail</span>
+          <div class="fn-name">logClassification()</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /flow -->
+
+  <!-- ════════════ LEGEND ════════════ -->
+  <div class="legend">
+    <h3>Legend</h3>
+    <div class="legend-items">
+      <div class="legend-item">
+        <div class="legend-dot" style="background: var(--accent-blue);"></div>
+        Trigger &amp; Ingest
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background: var(--accent-cyan);"></div>
+        File Preparation
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background: var(--accent-purple);"></div>
+        AI Classification
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background: var(--accent-amber);"></div>
+        Claim Matching
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background: var(--accent-emerald);"></div>
+        File Organization
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background: var(--accent-rose);"></div>
+        Reporting &amp; Audit
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+</body>
+</html>
